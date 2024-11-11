@@ -22,16 +22,16 @@ module player_position(
             x = grid_starting_x + (grid_size * 2);
             y = grid_starting_y + (grid_size * 2);
         end else begin
-            if (up && y > (grid_starting_y))
+            if (up && y != (grid_starting_y))
                 y <= y - grid_size;
 
-            if (down && y < (grid_starting_y + (grid_size * 4)))
+            if (down && y != (grid_starting_y + (grid_size * 4)))
                 y <= y + grid_size;
 
-            if (left && x > (grid_starting_x))
+            if (left && x != (grid_starting_x))
                 x <= x - grid_size;
 
-            if (right && x < (grid_starting_x + (grid_size * 4)))
+            if (right && x != (grid_starting_x + (grid_size * 4)))
                 x <= x + grid_size;
         end
     end
