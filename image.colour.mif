@@ -1,9 +1,0 @@
-Depth = 19200;
-Width = 3;
-Address_radix = dec;
-Data_radix = bin;
-
-Content
-BEGIN
-
-END;
