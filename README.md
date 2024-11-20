@@ -10,6 +10,11 @@ Our project is originally compiled on quartus prime, the top file being undertal
 Display: 160 X 120 VGA screen. 
 <br>
 Board: Altera Cyclone V DE1-SoC
+### Notes Regarding Setup in Quartus Prime (Skip if you're familiar with this or different environment)
+Inside the program, go to __Assignments -> Settings__, make sure: 
+1) __General -> Top-level entity__ is set to __undertale3__
+2) __Libraries -> Project libraries__ includes __/undertale3/vga_adapter__
+3) __Files -> Files__ includes all verilog (.v) files in this project
 ## 3. How to play: 
 1) Make sure keyboard, VGA Display is properly connected to board
 2) On the start screen: Push SW5+SW6 up, then push SW6 down (leaving SW5 up)
