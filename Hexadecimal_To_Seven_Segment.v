@@ -1,11 +1,6 @@
 
 module Hexadecimal_To_Seven_Segment (
-	// Inputs
 	hex_number,
-
-	// Bidirectional
-
-	// Outputs
 	seven_seg_display
 );
 input		[3:0]	hex_number;
