@@ -3,7 +3,7 @@ Undertale 3 is a thrilling, 2D RPG-style adventure where the player, represented
 
 # How to Use
 ## 1. Creation of .mif files (If you wish to modify this project)
-.mif file (in this project, specifically image.colour.mif) is used to generate the background (start screen) on the VGA screen. To convert your image into .mif files, refer to this project: [imagemif](https://github.com/stefanstancu/imgtomif)
+.mif file (in this project, specifically image.colour.mif) is used to generate the background (start screen) on the VGA screen. To convert your image into .mif files, refer to this project: [imgtomif](https://github.com/stefanstancu/imgtomif)
 ## 2. Environment Setup
 Our project is originally compiled on quartus prime, the top file being undertale3.v. 
 <br>
