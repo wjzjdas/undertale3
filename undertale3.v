@@ -24,7 +24,7 @@ module undertale3(
 	 output[6:0]HEX5;
 	 output[6:0]HEX6;
 	 output[6:0]HEX7;
-	 output [9:0] LEDR;
+	 output [1:0] LEDR;
     output [7:0] VGA_R;
     output [7:0] VGA_G;
     output [7:0] VGA_B;
@@ -45,11 +45,15 @@ module undertale3(
 	 wire [3:0] controlkey;
 	 wire [7:0] ps2_key_data;
 	 wire ps2_key_pressed;
+	 reg enable_plus;
 	 
 	 
 	 assign controlkey [3:0] = KEY[3:0];
 	 assign enable = SW[5];
-	 
+	 /*
+
+	 */
+	 // Instantiation Displayer function SOHAWWWWD >~<
 	 PS2_Demo m11(
 	CLOCK_50,
 	KEY,
@@ -68,10 +72,11 @@ module undertale3(
 	ps2_key_data
 	);
 	
-	assign LEDR[9] = ps2_key_pressed;
+	//Player movement Achieve
 	
-	assign LEDR[7:0] = ps2_key_data;
-	 
+	wire [7:0] playerX;
+	wire [6:0] playerY;
+	
    moving_pixel_display move1 (
         .CLOCK_50(CLOCK_50),
         .resetn(~SW[6]),
@@ -82,7 +87,9 @@ module undertale3(
         .VGA_X(VGA_X),
         .VGA_Y(VGA_Y),
         .color_to_display(color_to_display),
-        .plot(plot)
+        .plot(plot),
+		  .pixel_x(playerX),
+		  .pixel_y(playerY)
     );
 
     // Bullet Generator instantiation
@@ -95,28 +102,47 @@ module undertale3(
         .CLOCK_50(CLOCK_50),
         .resetn(~SW[6]),
         .enable(enable),
-        .player_collision(1'b0), // This could be updated with proper collision logic
+        .player_collision(1'b0), // This could be updated with proper collision logic BUT WE DIDNTTTTT (DID IT IN COLLISION_DETECTOR()
         .bullet_x(bullet_x),
         .bullet_y(bullet_y),
         .bullet_active(bullet_active),
         .bullet_color(bullet_color)
     );
 	 
+	 //TESTING FOR COLLISION WITH BOOOOOOOOOOONNNNNNNNNEEEEEEEEEEEEEESSSSSSSSSSSSS
+	 wire you_lose;
+	 collision_detector(.CLOCK_50(CLOCK_50),
+    .resetn(~SW[6]),
+    .player_x(playerX),
+    .player_y(playerY),
+    .bullet_x(bullet_x),
+    .bullet_y(bullet_y),
+    .collision_detected(you_lose)
+	 );
+	 assign LEDR[0] = you_lose;
+	
 
-// Compute if the pixel is in one of the two "heads" or the "shaft"
-assign bone_active = ((VGA_Y == bullet_y && VGA_X < bullet_x + 2) || (VGA_Y == bullet_y && VGA_X >= bullet_x + 6) ||
-							(VGA_Y == bullet_y+3 && VGA_X < bullet_x + 2) || (VGA_Y == bullet_y+3 && VGA_X >= bullet_x + 6) ||
-							(VGA_Y == bullet_y+1 && (VGA_X == bullet_x + 1 || VGA_X == bullet_x + 3 || VGA_X == bullet_x + 5)) || 
-							(VGA_Y == bullet_y+2 && (VGA_X == bullet_x + 2 || VGA_X == bullet_x + 4 || VGA_X == bullet_x + 6)))
-							&&VGA_X>=bullet_x&&VGA_X<bullet_x+8&&
-							bullet_active;
-
-
+	// Draw the bullet as a BBBBBBOOOOONNNEEEEEEE
+	assign bone_active = ((VGA_Y == bullet_y && VGA_X < bullet_x + 2) || (VGA_Y == bullet_y && VGA_X >= bullet_x + 6) ||
+								(VGA_Y == bullet_y+3 && VGA_X < bullet_x + 2) || (VGA_Y == bullet_y+3 && VGA_X >= bullet_x + 6) ||
+								(VGA_Y == bullet_y+1 && (VGA_X == bullet_x + 1 || VGA_X == bullet_x + 3 || VGA_X == bullet_x + 5)) || 
+								(VGA_Y == bullet_y+2 && (VGA_X == bullet_x + 2 || VGA_X == bullet_x + 4 || VGA_X == bullet_x + 6)))
+								&&VGA_X>=bullet_x&&VGA_X<bullet_x+8&&
+								bullet_active;
+		
+		wire [2:0]end_colour;
+		mif_reader nb(
+			 .x(VGA_X),  // X coordinate
+			 .y(VGA_Y),  // Y coordinate
+			 .clock(CLOCK_50),
+			 .color(end_colour) // Color from the MIF file
+		);
+		
 	 // VGA Adapter
 	 vga_adapter VGA (
         .resetn(~SW[6]),                
         .clock(CLOCK_50),
-        .colour((bone_active) ? bullet_color : color_to_display),
+        .colour(you_lose?end_colour:((bone_active) ? bullet_color : color_to_display)),
         .x(VGA_X),
         .y(VGA_Y),
         .plot(plot),
