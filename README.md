@@ -10,6 +10,8 @@ Our project is originally compiled on quartus prime, the top file being undertal
 Display: 160 X 120 VGA screen. 
 <br>
 FPGA Board: Altera Cyclone V Soc FPGA DE1-SoC
+<br>
+Keyboard compatible with FPGA
 ### Notes Regarding Setup in Quartus Prime (Skip if you're familiar with this or different environment)
 If you wish to modify this project, then here are some setup tips. Otherwise you can just use the output files we have.
 <br>
