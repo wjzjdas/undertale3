@@ -1,0 +1,166 @@
+module undertale3(
+    input wire CLOCK_50,      // DE1-SoC 上的50 MHz时钟信号
+    input wire RESET_N,       // 全局复位信号
+    output wire [3:0] VGA_R,  // VGA 红色信号
+    output wire [3:0] VGA_G,  // VGA 绿色信号
+    output wire [3:0] VGA_B,  // VGA 蓝色信号
+    output wire VGA_HS,       // VGA 水平同步信号
+    output wire VGA_VS        // VGA 垂直同步信号
+);
+
+    // VGA 时钟信号
+    wire clk_25mhz;
+
+    // 同步复位信号
+    wire reset = ~RESET_N;
+
+    // VGA 显示信号
+    wire [9:0] x;
+    wire [9:0] y;
+    wire video_on;
+
+    // 颜色信号
+    wire [3:0] red, green, blue;
+
+    // 产生 25 MHz 时钟（假设 CLOCK_50 是 50 MHz）
+    clock_divider clk_div (
+        .clk_in(CLOCK_50),
+        .reset(reset),
+        .clk_out(clk_25mhz)
+    );
+
+    // 实例化 VGA 控制器
+    vga_controller vga_ctrl (
+        .clk(clk_25mhz),
+        .reset(reset),
+        .hsync(VGA_HS),
+        .vsync(VGA_VS),
+        .x(x),
+        .y(y),
+        .video_on(video_on)
+    );
+
+    // 实例化 VGA 显示模块
+    vga_display vga_disp (
+        .clk(clk_25mhz),
+        .reset(reset),
+        .x(x),
+        .y(y),
+        .video_on(video_on),
+        .red(red),
+        .green(green),
+        .blue(blue)
+    );
+
+    // 将颜色信号连接到 VGA 输出
+    assign VGA_R = red;
+    assign VGA_G = green;
+    assign VGA_B = blue;
+
+endmodule
+
+module vga_display (
+    input wire clk,
+    input wire reset,
+    output wire hsync,
+    output wire vsync,
+    output wire [3:0] red,      // 4 位红色信号
+    output wire [3:0] green,    // 4 位绿色信号
+    output wire [3:0] blue      // 4 位蓝色信号
+);
+
+    wire [9:0] x;
+    wire [9:0] y;
+    wire video_on;
+
+    // 实例化 VGA 控制器
+    vga_controller vga_ctrl (
+        .clk(clk),
+        .reset(reset),
+        .hsync(hsync),
+        .vsync(vsync),
+        .x(x),
+        .y(y),
+        .video_on(video_on)
+    );
+
+    // 根据位置生成图案
+    assign red = (video_on && (x < 320)) ? 4'hF : 4'h0;    // 左半屏显示红色
+    assign green = (video_on && (x >= 320)) ? 4'hF : 4'h0; // 右半屏显示绿色
+    assign blue = (video_on && (y < 240)) ? 4'hF : 4'h0;   // 上半屏显示蓝色
+endmodule
+module clock_divider (
+    input wire clk_in,
+    input wire reset,
+    output reg clk_out
+);
+    reg toggle = 0;
+    always @(posedge clk_in or posedge reset) begin
+        if (reset) begin
+            clk_out <= 0;
+            toggle <= 0;
+        end else begin
+            toggle <= ~toggle;
+            clk_out <= toggle;
+        end
+    end
+endmodule
+
+
+module vga_controller (
+    input wire clk,            // 主时钟，需为 25.175 MHz
+    input wire reset,
+    output reg hsync,          // 水平同步信号
+    output reg vsync,          // 垂直同步信号
+    output reg [9:0] x,        // 当前像素的 X 坐标
+    output reg [9:0] y,        // 当前像素的 Y 坐标
+    output reg video_on        // 显示区域标志
+);
+
+    // VGA 参数设置
+    parameter H_VISIBLE = 640;  // 水平可见区域
+    parameter H_FRONT = 16;     // 水平前沿
+    parameter H_SYNC = 96;      // 水平同步脉冲
+    parameter H_BACK = 48;      // 水平后沿
+    parameter H_TOTAL = 800;    // 水平总周期
+
+    parameter V_VISIBLE = 480;  // 垂直可见区域
+    parameter V_FRONT = 10;     // 垂直前沿
+    parameter V_SYNC = 2;       // 垂直同步脉冲
+    parameter V_BACK = 33;      // 垂直后沿
+    parameter V_TOTAL = 525;    // 垂直总周期
+
+    // 行和列计数器
+    reg [9:0] h_count = 0;
+    reg [9:0] v_count = 0;
+
+    // 时序控制
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            h_count <= 0;
+            v_count <= 0;
+        end
+        else begin
+            // 水平计数
+            if (h_count < H_TOTAL - 1)
+                h_count <= h_count + 1;
+            else begin
+                h_count <= 0;
+                // 垂直计数
+                if (v_count < V_TOTAL - 1)
+                    v_count <= v_count + 1;
+                else
+                    v_count <= 0;
+            end
+        end
+    end
+
+    // 同步信号生成
+    always @* begin
+        hsync = (h_count >= H_VISIBLE + H_FRONT) && (h_count < H_VISIBLE + H_FRONT + H_SYNC);
+        vsync = (v_count >= V_VISIBLE + V_FRONT) && (v_count < V_VISIBLE + V_FRONT + V_SYNC);
+        video_on = (h_count < H_VISIBLE) && (v_count < V_VISIBLE);
+        x = h_count;
+        y = v_count;
+    end
+endmodule

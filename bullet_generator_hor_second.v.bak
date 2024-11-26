@@ -1,4 +1,4 @@
-module bullet_generator(
+module bullet_generator_hor_second(
     input CLOCK_50,
     input resetn,
     input enable,
@@ -27,15 +27,15 @@ module bullet_generator(
         .random_num(random_number)
     );
     // Random spawn position for bullet
-    wire [7:0] random_x;
-    assign random_x = (spawn_counter[7:0] % SCREEN_WIDTH); // Use part of the counter as a pseudo-random number
+    wire [6:0] random_y;
+    assign random_y = (spawn_counter[6:0] % SCREEN_HEIGHT); // Use part of the counter as a pseudo-random number
 
     // Bullet generation and movement
     always @(posedge CLOCK_50 or negedge resetn) begin
     if (!resetn) begin
         spawn_counter <= 20'd0;
-        bullet_x <= 8'd71; // Fixed starting x position for bullet
-        bullet_y <= 7'd0;
+        bullet_y <= 7'd71; // Fixed starting y position for bullet
+        bullet_x <= 8'd0;
         bullet_active <= 1'b0;
     end else if (enable && !player_collision) begin
         // Spawn bullets at intervals
@@ -43,16 +43,16 @@ module bullet_generator(
             spawn_counter <= 20'd0;
             if (!bullet_active) begin
 
-                bullet_y <= 7'd0; // Spawn from top of the screen
+                bullet_x <= 8'd0; // Spawn from left of the screen
 
-					if (random_number == 0) begin
-								bullet_x <= 8'd71;
-					end else if (random_number == 3) begin
-								bullet_x <= 8'd61;
+					if (random_number == 3) begin
+								bullet_y <= 8'd71;
 					end else if (random_number == 1) begin
-								bullet_x <= 8'd81;
+								bullet_y <= 8'd61;
+					end else if (random_number == 0) begin
+								bullet_y <= 8'd81;
 					end else if (random_number == 2) begin
-								bullet_x <= 8'd91;
+								bullet_y <= 8'd91;
 					end 
                 bullet_active <= 1'b1;
             end
@@ -64,8 +64,8 @@ module bullet_generator(
         if (bullet_active) begin
             if (bullet_move_counter >= 20'd5_000_000) begin // Move bullet every 0.1 second (10 pixels per second)
                 bullet_move_counter <= 20'd0;
-                if (bullet_y < SCREEN_HEIGHT - 1) begin
-                    bullet_y <= bullet_y + 1; // Move bullet down by 1 pixel
+                if (bullet_x < SCREEN_WIDTH - 1) begin
+                    bullet_x <= bullet_x + 1; // Move bullet down by 1 pixel
                 end else begin
                     bullet_active <= 1'b0; // Deactivate bullet when it reaches the bottom
 	
@@ -77,7 +77,7 @@ module bullet_generator(
     end else begin
         // Reset if player is hit or disabled
         bullet_active <= 1'b0;
-        bullet_y <= 7'd0;
+        bullet_x <= 8'd0;
     end
 end
 

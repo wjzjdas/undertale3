@@ -44,6 +44,9 @@ output [7:0] ps2_kd;
 // Internal Wires
 wire		[7:0]	ps2_key_data;
 wire				ps2_key_pressed;
+assign ps2_kd = ps2_key_data;
+assign ps2_kp = ps2_key_pressed;
+
 
 // Internal Registers
 reg			[7:0]	last_data_received;
@@ -103,9 +106,6 @@ Hexadecimal_To_Seven_Segment Segment1 (
 	// Outputs
 	.seven_seg_display	(HEX1)
 );
-
-assign ps2_kd = ps2_key_data;
-assign ps2_kp = ps2_key_pressed;
 
 
 endmodule

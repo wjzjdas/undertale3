@@ -1,0 +1,24 @@
+module collision_detector(
+    input CLOCK_50,
+    input resetn,
+    input [7:0] player_x,
+    input [6:0] player_y,
+    input [7:0] bullet_x,
+    input [6:0] bullet_y,
+    output reg collision_detected
+);
+
+    always @(posedge CLOCK_50 or negedge resetn) begin
+        if (!resetn) begin
+            collision_detected <= 1'b0;
+        end else begin
+            // Simple collision detection logic
+            if ((player_x == bullet_x) && (player_y == bullet_y)) begin
+                collision_detected <= 1'b1;
+            end else begin
+                collision_detected <= 1'b0;
+            end
+        end
+    end
+
+endmodule

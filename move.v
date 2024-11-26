@@ -16,11 +16,6 @@ module moving_pixel_display(
     parameter SCREEN_WIDTH = 160;
     parameter SCREEN_HEIGHT = 120;
 
-    // 定义X和Y的计数器
-    reg [7:0] x_counter;
-    reg [6:0] y_counter;
-
-
     // 初始化初始位置
     initial begin
         pixel_x = 60; // 将初始位置放在其中一个格子 该像素点为心形的左上角的点
@@ -35,24 +30,6 @@ module moving_pixel_display(
         .clock(CLOCK_50), 
         .q(mif_color) // 输出当前偏移位置的颜色
     );
-
-    // X和Y计数器，用于遍历屏幕
-    always @(posedge CLOCK_50 or negedge resetn) begin
-        if (!resetn) begin
-            x_counter <= 0;
-            y_counter <= 0;
-        end else begin
-            if (x_counter < SCREEN_WIDTH - 1) begin
-                x_counter <= x_counter + 1;
-            end else begin
-                x_counter <= 0;
-                if (y_counter < SCREEN_HEIGHT - 1)
-                    y_counter <= y_counter + 1;
-                else
-                    y_counter <= 0;
-            end
-        end
-    end
 	 
 	
 	 // 按键状态寄存器
@@ -206,8 +183,8 @@ assign key_press_signal = key_state_prev & (~{w_key_stable, a_key_stable, s_key_
     // 移动像素逻辑
     always @(posedge CLOCK_50 or negedge resetn) begin
         if (!resetn) begin                          
-            pixel_x <= 70;
-            pixel_y <= 80;
+            pixel_x <= 60;
+            pixel_y <= 60;
         end else begin
             // 左移（KEY[0]）
             if (key_press_signal[2]) begin
@@ -239,10 +216,26 @@ assign key_press_signal = key_state_prev & (~{w_key_stable, a_key_stable, s_key_
             end
         end
     end
+	 
+	 
+	 
+
+	 
+	 
+	   wire [2:0]end_colour;
+		wire [14:0] wire_address;
+		assign wire_address = 160 * VGA_Y + VGA_X;
+		endend e1 (
+			 .address(wire_address), 
+			 .clock(CLOCK_50),
+			 .q(end_colour) // Color from the MIF file
+		);
+		
+		
 
     // 计算MIF文件的偏移量
-    assign xc_offset = x_counter - pixel_x;
-    assign yc_offset = y_counter - pixel_y;
+    assign xc_offset = VGA_X - pixel_x;
+    assign yc_offset = VGA_Y - pixel_y;
 
     // 更新VGA坐标和颜色
     always @(posedge CLOCK_50 or negedge resetn) begin
@@ -268,12 +261,14 @@ assign key_press_signal = key_state_prev & (~{w_key_stable, a_key_stable, s_key_
             if ((VGA_X >= pixel_x && VGA_X < pixel_x + 8) &&
                 (VGA_Y >= pixel_y && VGA_Y < pixel_y + 8)) begin
                 color_to_display <= mif_color; // 读取MIF文件中的颜色，绘制心形
-            end else if ((x_counter == 59 && y_counter>=59 && y_counter<= 99) || (x_counter == 69 && y_counter>=59 && y_counter<= 99) || (x_counter == 79 && y_counter>=59 && y_counter<= 99) || (x_counter == 89 && y_counter>=59 && y_counter<= 99) || (x_counter == 99 && y_counter>=59 && y_counter<= 99)||
-            (y_counter == 59 && x_counter>=59 && x_counter<= 99) || (y_counter == 69 && x_counter>=59 && x_counter<= 99) || (y_counter == 79 && x_counter>=59 && x_counter<= 99) || (y_counter == 89 && x_counter>=59 && x_counter<= 99) || (y_counter == 99 && x_counter>=59 && x_counter<= 99)) begin
+            end else if ((VGA_X == 59 && VGA_Y>=59 && VGA_Y<= 99) || (VGA_X == 69 && VGA_Y>=59 && VGA_Y<= 99) || (VGA_X == 79 && VGA_Y>=59 && VGA_Y<= 99) || (VGA_X == 89 && VGA_Y>=59 && VGA_Y<= 99) || (VGA_X == 99 && VGA_Y>=59 && VGA_Y<= 99)||
+            (VGA_Y == 59 && VGA_X>=59 && VGA_X<= 99) || (VGA_Y == 69 && VGA_X>=59 && VGA_X<= 99) || (VGA_Y == 79 && VGA_X>=59 && VGA_X<= 99) || (VGA_Y == 89 && VGA_X>=59 && VGA_X<= 99) || (VGA_Y == 99 && VGA_X>=59 && VGA_X<= 99)) begin
                 color_to_display <= 3'b111; // 白色的网格线
+					 
+
             end else begin
-                color_to_display <= 3'b000; // 黑色背景
-            end
+					 color_to_display <= 3'b000; // 黑色背景
+				end
         end else begin
             // 当enable为0时，不进行绘图，保持plot为0
             VGA_X <= VGA_X;

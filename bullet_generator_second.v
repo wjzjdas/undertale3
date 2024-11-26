@@ -1,4 +1,4 @@
-module bullet_generator(
+module bullet_generator_second(
     input CLOCK_50,
     input resetn,
     input enable,
@@ -45,13 +45,13 @@ module bullet_generator(
 
                 bullet_y <= 7'd0; // Spawn from top of the screen
 
-					if (random_number == 0) begin
+					if (random_number == 3) begin
 								bullet_x <= 8'd71;
-					end else if (random_number == 3) begin
-								bullet_x <= 8'd61;
-					end else if (random_number == 1) begin
-								bullet_x <= 8'd81;
 					end else if (random_number == 2) begin
+								bullet_x <= 8'd61;
+					end else if (random_number == 0) begin
+								bullet_x <= 8'd81;
+					end else if (random_number == 1) begin
 								bullet_x <= 8'd91;
 					end 
                 bullet_active <= 1'b1;
